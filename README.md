@@ -202,4 +202,5 @@ For issues and questions:
 
 ---
 
-**Built with ❤️ using AWS Serverless Technologies**
+## Architecture
+![Architecture](https://github.com/user-attachments/assets/a76ed2a7-ad53-47ef-81db-45dd3f736f2e)
