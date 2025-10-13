@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Insurance Cost Prediction</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --accent-color: #e74c3c;
+            --success-color: #27ae60;
+            --warning-color: #f39c12;
+            --light-bg: #ecf0f1;
+            --dark-text: #2c3e50;
+        }
+
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .main-container {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            padding: 20px 0;
+        }
+
+        .prediction-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            overflow: hidden;
+        }
+
+        .card-header {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            padding: 2rem;
+            text-align: center;
+            border: none;
+        }
+
+        .card-header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .card-header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+            margin: 0;
+        }
+
+        .card-body {
+            padding: 3rem;
+        }
+
+        .form-group {
+            margin-bottom: 2rem;
+        }
+
+        .form-label {
+            font-weight: 600;
+            color: var(--dark-text);
+            margin-bottom: 0.8rem;
+            font-size: 1.1rem;
+        }
+
+        .form-control {
+            border: 2px solid #e9ecef;
+            border-radius: 12px;
+            padding: 1rem;
+            font-size: 1.1rem;
+            transition: all 0.3s ease;
+            background: rgba(255, 255, 255, 0.8);
+        }
+
+        .form-control:focus {
+            border-color: var(--secondary-color);
+            box-shadow: 0 0 0 0.2rem rgba(52, 152, 219, 0.25);
+            background: white;
+        }
+
+        .input-group-text {
+            background: var(--secondary-color);
+            color: white;
+            border: 2px solid var(--secondary-color);
+            border-radius: 12px 0 0 12px;
+            font-weight: 600;
+        }
+
+        .btn-predict {
+            background: linear-gradient(135deg, var(--success-color), #2ecc71);
+            border: none;
+            border-radius: 12px;
+            padding: 1rem 2rem;
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: white;
+            width: 100%;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .btn-predict:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(46, 204, 113, 0.3);
+            background: linear-gradient(135deg, #2ecc71, var(--success-color));
+        }
+
+        .btn-predict:disabled {
+            background: #95a5a6;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .result-container {
+            margin-top: 2rem;
+            padding: 2rem;
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+            border-radius: 15px;
+            border-left: 5px solid var(--success-color);
+            display: none;
+        }
+
+        .result-container.show {
+            display: block;
+            animation: slideIn 0.5s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .result-title {
+            color: var(--success-color);
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+        }
+
+        .result-amount {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: var(--primary-color);
+            margin: 1rem 0;
+        }
+
+        .result-message {
+            font-size: 1.1rem;
+            color: var(--dark-text);
+            line-height: 1.6;
+        }
+
+        .loading-spinner {
+            display: none;
+        }
+
+        .loading-spinner.show {
+            display: inline-block;
+        }
+
+        .info-section {
+            background: rgba(52, 152, 219, 0.1);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            border-left: 4px solid var(--secondary-color);
+        }
+
+        .info-title {
+            color: var(--secondary-color);
+            font-weight: 700;
+            margin-bottom: 1rem;
+        }
+
+        .smoker-info {
+            background: rgba(231, 76, 60, 0.1);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-top: 0.5rem;
+            border-left: 3px solid var(--accent-color);
+        }
+
+        .error-message {
+            background: rgba(231, 76, 60, 0.1);
+            color: var(--accent-color);
+            padding: 1rem;
+            border-radius: 8px;
+            margin-top: 1rem;
+            display: none;
+        }
+
+        .error-message.show {
+            display: block;
+        }
+
+        @media (max-width: 768px) {
+            .card-header h1 {
+                font-size: 2rem;
+            }
+            
+            .card-body {
+                padding: 2rem;
+            }
+            
+            .result-amount {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container main-container">
+        <div class="row justify-content-center w-100">
+            <div class="col-lg-8 col-xl-6">
+                <div class="card prediction-card">
+                    <div class="card-header">
+                        <h1><i class="fas fa-shield-alt me-3"></i>Insurance Cost Prediction</h1>
+                        <p>Get accurate insurance cost estimates using advanced machine learning</p>
+                    </div>
+                    
+                    <div class="card-body">
+                        <div class="info-section">
+                            <div class="info-title">
+                                <i class="fas fa-info-circle me-2"></i>How it works
+                            </div>
+                            <p class="mb-2">Enter your health information below to get an instant insurance cost prediction based on:</p>
+                            <ul class="mb-0">
+                                <li><strong>BMI:</strong> Body Mass Index (15-60)</li>
+                                <li><strong>Age:</strong> Your current age (18-100)</li>
+                                <li><strong>Smoking Status:</strong> Whether you smoke or not</li>
+                            </ul>
+                            
+                            <div class="smoker-info">
+                                <strong><i class="fas fa-smoking-ban me-2"></i>Smoking Status:</strong><br>
+                                • Enter <strong>1</strong> if you are a smoker<br>
+                                • Enter <strong>0</strong> if you are a non-smoker
+                            </div>
+                        </div>
+
+                        <form id="predictionForm">
+                            <div class="form-group">
+                                <label for="bmi" class="form-label">
+                                    <i class="fas fa-weight me-2"></i>Body Mass Index (BMI)
+                                </label>
+                                <div class="input-group">
+                                    <span class="input-group-text">BMI</span>
+                                    <input type="number" 
+                                           class="form-control" 
+                                           id="bmi" 
+                                           name="bmi" 
+                                           step="0.1" 
+                                           min="15" 
+                                           max="60" 
+                                           placeholder="e.g., 25.5" 
+                                           required>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="age" class="form-label">
+                                    <i class="fas fa-birthday-cake me-2"></i>Age
+                                </label>
+                                <div class="input-group">
+                                    <span class="input-group-text">Years</span>
+                                    <input type="number" 
+                                           class="form-control" 
+                                           id="age" 
+                                           name="age" 
+                                           min="18" 
+                                           max="100" 
+                                           placeholder="e.g., 30" 
+                                           required>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="new_smoker" class="form-label">
+                                    <i class="fas fa-smoking me-2"></i>Smoking Status
+                                </label>
+                                <div class="input-group">
+                                    <span class="input-group-text">Status</span>
+                                    <select class="form-control" id="new_smoker" name="new_smoker" required>
+                                        <option value="">Select smoking status</option>
+                                        <option value="0">0 - Non-smoker</option>
+                                        <option value="1">1 - Smoker</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <button type="submit" class="btn btn-predict" id="predictBtn">
+                                <span class="loading-spinner spinner-border spinner-border-sm me-2" role="status"></span>
+                                <i class="fas fa-calculator me-2"></i>
+                                <span id="btnText">Predict Insurance Cost</span>
+                            </button>
+                        </form>
+
+                        <div class="error-message" id="errorMessage">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            <span id="errorText"></span>
+                        </div>
+
+                        <div class="result-container" id="resultContainer">
+                            <div class="result-title">
+                                <i class="fas fa-chart-line me-2"></i>Prediction Result
+                            </div>
+                            <div class="result-amount" id="resultAmount">$0.00</div>
+                            <div class="result-message" id="resultMessage"></div>
+                            <small class="text-muted mt-2 d-block">
+                                <i class="fas fa-clock me-1"></i>
+                                Prediction ID: <span id="predictionId"></span>
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // API endpoint - will be replaced with actual endpoint
+        const API_ENDPOINT = '${api_endpoint}';
+
+        document.getElementById('predictionForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const bmi = parseFloat(document.getElementById('bmi').value);
+            const age = parseInt(document.getElementById('age').value);
+            const newSmoker = parseInt(document.getElementById('new_smoker').value);
+            
+            // Show loading state
+            showLoading(true);
+            hideError();
+            hideResult();
+            
+            try {
+                const response = await fetch(API_ENDPOINT, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        bmi: bmi,
+                        New_Smoker: newSmoker,
+                        age: age
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showResult(data);
+                } else {
+                    showError(data.error || 'An error occurred while making the prediction.');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showError('Unable to connect to the prediction service. Please try again later.');
+            } finally {
+                showLoading(false);
+            }
+        });
+        
+        function showLoading(show) {
+            const btn = document.getElementById('predictBtn');
+            const spinner = document.querySelector('.loading-spinner');
+            const btnText = document.getElementById('btnText');
+            
+            if (show) {
+                btn.disabled = true;
+                spinner.classList.add('show');
+                btnText.textContent = 'Calculating...';
+            } else {
+                btn.disabled = false;
+                spinner.classList.remove('show');
+                btnText.textContent = 'Predict Insurance Cost';
+            }
+        }
+        
+        function showResult(data) {
+            const container = document.getElementById('resultContainer');
+            const amount = document.getElementById('resultAmount');
+            const message = document.getElementById('resultMessage');
+            const predictionId = document.getElementById('predictionId');
+            
+            amount.textContent = `$${data.predicted_cost.toLocaleString('en-US', {minimumFractionDigits: 2})}`;
+            message.textContent = data.message;
+            predictionId.textContent = data.prediction_id;
+            
+            container.classList.add('show');
+        }
+        
+        function showError(errorText) {
+            const errorDiv = document.getElementById('errorMessage');
+            const errorTextSpan = document.getElementById('errorText');
+            
+            errorTextSpan.textContent = errorText;
+            errorDiv.classList.add('show');
+        }
+        
+        function hideError() {
+            document.getElementById('errorMessage').classList.remove('show');
+        }
+        
+        function hideResult() {
+            document.getElementById('resultContainer').classList.remove('show');
+        }
+    </script>
+</body>
+</html>
