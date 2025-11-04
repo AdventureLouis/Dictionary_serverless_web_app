@@ -204,3 +204,11 @@ For issues and questions:
 
 ## Architecture
 ![Architecture](https://github.com/user-attachments/assets/a76ed2a7-ad53-47ef-81db-45dd3f736f2e)
+
+
+##Video Demo
+
+
+Uploading Demo.mp4…
+
+
